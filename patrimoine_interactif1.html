@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionnaire de Patrimoine Multi-Comptes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Client JS Supabase (Authentification + Base de données) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        @font-face {
+            font-family: 'Google Sans';
+            src: url('https://fonts.gstatic.com/s/googlesans/v58/4UaRrENHsxJlGDuGo1OIlJfC6l_24rlCK1Yo_Iq2vgCI.woff2') format('woff2');
+            font-weight: 400 700;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        :root {
+            --ff-sans: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --ff-mono: 'SF Mono', 'Menlo', Monaco, Consolas, monospace;
+
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --border: #334155;
+            
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            --primary: #38bdf8;
+            --primary-hover: #0284c7;
+            --positive: #4ade80;
+            --negative: #f87171;
+            --warning: #facc15;
+            
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--ff-sans);
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 24px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Styles de la carte de connexion */
+        .login-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            max-width: 400px;
+            width: 100%;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* Top Metric Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-value {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .metric-sub {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .text-positive { color: var(--positive); }
+        .text-negative { color: var(--negative); }
+        .text-primary { color: var(--primary); }
+
+        /* Main Grid: Chart & Table */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* SVG Donut Chart */
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            aspect-ratio: 1;
+            margin: 0 auto;
+        }
+
+        #donut-chart {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .donut-slice {
+            cursor: pointer;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+            transform-origin: center;
+            outline: none;
+        }
+
+        .donut-slice:hover, .donut-slice.active {
+            transform: scale(1.04);
+        }
+
+        .donut-slice.dimmed {
+            opacity: 0.3;
+        }
+
+        .center-title {
+            font-size: 12px;
+            fill: var(--text-muted);
+            text-anchor: middle;
+        }
+
+        .center-value {
+            font-size: 24px;
+            font-weight: 700;
+            fill: var(--text);
+            text-anchor: middle;
+        }
+
+        .center-sub {
+            font-size: 12px;
+            fill: var(--text-muted);
+            text-anchor: middle;
+        }
+
+        /* Table View & Form */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .input-text, .input-num, .input-color {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .input-text:focus, .input-num:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .input-num {
+            text-align: right;
+            font-family: var(--ff-mono);
+        }
+
+        .input-color {
+            padding: 2px;
+            height: 32px;
+            width: 32px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: var(--primary);
+            color: #0f172a;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--negative);
+            padding: 6px;
+            border-radius: var(--radius-sm);
+        }
+
+        .btn-danger:hover {
+            background: rgba(248, 113, 113, 0.1);
+        }
+
+        .btn-secondary {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: var(--negative);
+            border: 1px solid var(--negative);
+        }
+
+        .btn-logout:hover {
+            background: rgba(248, 113, 113, 0.1);
+        }
+
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            gap: 12px;
+        }
+
+        .badge-pct {
+            font-family: var(--ff-mono);
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: #090d16;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 1000;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .tooltip-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .tooltip-body {
+            color: var(--text-muted);
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Écran de Connexion -->
+    <div id="login-screen" class="login-card">
+        <h2 style="text-align: center;">Connexion</h2>
+        <form id="login-form">
+            <div class="input-group">
+                <label>Adresse E-mail</label>
+                <input type="email" id="email" class="input-text" required>
+            </div>
+            <div class="input-group" style="margin-top: 12px;">
+                <label>Mot de passe</label>
+                <input type="password" id="password" class="input-text" required>
+            </div>
+            <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">Se connecter</button>
+            <div id="login-error" style="color: var(--negative); font-size: 13px; margin-top: 12px; text-align: center;"></div>
+        </form>
+    </div>
+
+    <!-- Application Dashboard (Masquée tant qu'on n'est pas connecté) -->
+    <div id="app-container" class="container hidden">
+        <header>
+            <div>
+                <h1>Camembert de Patrimoine & Plus-Values</h1>
+                <div class="subtitle" id="user-display">Connecté : ...</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" onclick="saveData()">💾 Enregistrer</button>
+                <button class="btn btn-logout" onclick="logout()">Déconnexion</button>
+            </div>
+        </header>
+
+        <!-- Dynamic Summary Cards -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <span class="metric-label">Patrimoine Total</span>
+                <span class="metric-value" id="total-val">0 €</span>
+                <span class="metric-sub text-primary">Valeur actuelle totale</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Capital Investi</span>
+                <span class="metric-value" id="invested-val">0 €</span>
+                <span class="metric-sub" style="color: var(--text-muted)">Total des versements</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Plus-Value Totale</span>
+                <span class="metric-value" id="gain-val">0 €</span>
+                <span class="metric-sub" id="gain-pct-badge">+0.00% sur le capital</span>
+            </div>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Chart Side -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Répartition Globale</span>
+                </div>
+                <div class="chart-wrapper">
+                    <svg id="donut-chart" viewBox="-160 -160 320 320">
+                        <g id="slices-group"></g>
+                        <g class="center-group">
+                            <text class="center-title" y="-18">Patrimoine</text>
+                            <text class="center-value" id="center-total" y="10">0 €</text>
+                            <text class="center-sub" id="center-sub" y="32">0 supports</text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Table Editor Side -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Détail des Supports</span>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 40px">Couleur</th>
+                                <th>Support</th>
+                                <th style="text-align: right">Solde Total (€)</th>
+                                <th style="text-align: right">Dont PV (€)</th>
+                                <th style="text-align: right">% PV / Capital</th>
+                                <th style="width: 40px"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="actions-bar">
+                    <button class="btn" onclick="addRow()">+ Ajouter un support</button>
+                    <button class="btn btn-secondary" onclick="resetToDefault()">Réinitialiser</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Tooltip -->
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-header">
+            <div class="tooltip-dot" id="tooltip-dot"></div>
+            <span id="tooltip-title">Support</span>
+        </div>
+        <div class="tooltip-body">
+            <div>Solde : <strong id="tooltip-val" style="color: var(--text)">0 €</strong> (<span id="tooltip-share">0%</span> du total)</div>
+            <div>Capital : <span id="tooltip-invested">0 €</span></div>
+            <div>Plus-value : <span id="tooltip-gain" class="text-positive">0 €</span> (<strong id="tooltip-gain-pct" class="text-positive">+0%</strong>)</div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION SUPABASE ---
+        const SUPABASE_URL = "https://xuuoeejdmzitjpsvhhmy.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1dW9lZWpkbXppdGpwc3ZoaG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5OTA2MTQsImV4cCI6MjEwNTU2NjYxNH0.JO0r78pD5cqOa0ZYwr_4W0CHM3tcKRzCWjgfcqCjqlg"; // Remplacez par votre clé anon
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Données par défaut
+        const defaultItems = [
+            { id: 1, name: 'PEA', value: 6883, gain: 650, color: '#38bdf8' },
+            { id: 2, name: 'Livret A', value: 2600, gain: 0, color: '#4ade80' },
+            { id: 3, name: 'Compte courant', value: 500, gain: 0, color: '#facc15' },
+            { id: 4, name: 'Crypto', value: 367, gain: 57, color: '#f87171' },
+            { id: 5, name: 'CTO', value: 257, gain: 2.5, color: '#a855f7' }
+        ];
+
+        let items = [];
+
+        // Authentification : Connexion
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                document.getElementById('login-error').textContent = "Identifiants incorrects.";
+            } else {
+                initDashboard(data.user);
+            }
+        });
+
+        // Déconnexion
+        async function logout() {
+            await supabase.auth.signOut();
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('hidden');
+        }
+
+        // Initialisation de l'application utilisateur
+        async function initDashboard(user) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('user-display').textContent = `Connecté : ${user.email}`;
+
+            // Récupérer les données depuis la base de données
+            const { data } = await supabase.from('patrimoine').select('data').single();
+
+            if (data && data.data) {
+                items = data.data;
+            } else {
+                items = JSON.parse(JSON.stringify(defaultItems));
+            }
+
+            render();
+        }
+
+        // Sauvegarder dans la base de données
+        async function saveData() {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            const { error } = await supabase.from('patrimoine').upsert({
+                user_id: user.id,
+                data: items
+            });
+
+            if (error) {
+                alert("Erreur de sauvegarde : " + error.message);
+            } else {
+                alert("Données enregistrées avec succès !");
+            }
+        }
+
+        const fmt = (val) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(val);
+        const fmtPct = (val) => (val >= 0 ? '+' : '') + val.toFixed(2) + '%';
+
+        function render() {
+            renderTable();
+            renderMetricsAndChart();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            items.forEach((item, idx) => {
+                const invested = item.value - item.gain;
+                const gainPct = invested > 0 ? (item.gain / invested) * 100 : 0;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <input type="color" class="input-color" value="${item.color}" onchange="updateItem(${idx}, 'color', this.value)">
+                    </td>
+                    <td>
+                        <input type="text" class="input-text" value="${escapeHtml(item.name)}" onchange="updateItem(${idx}, 'name', this.value)">
+                    </td>
+                    <td>
+                        <input type="number" class="input-num" value="${item.value}" step="any" onchange="updateItem(${idx}, 'value', parseFloat(this.value) || 0)">
+                    </td>
+                    <td>
+                        <input type="number" class="input-num" value="${item.gain}" step="any" onchange="updateItem(${idx}, 'gain', parseFloat(this.value) || 0)">
+                    </td>
+                    <td style="text-align: right">
+                        <span class="badge-pct ${gainPct >= 0 ? 'text-positive' : 'text-negative'}">
+                            ${fmtPct(gainPct)}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-danger" onclick="deleteRow(${idx})" title="Supprimer">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderMetricsAndChart() {
+            const totalVal = items.reduce((sum, item) => sum + item.value, 0);
+            const totalGain = items.reduce((sum, item) => sum + item.gain, 0);
+            const totalInvested = totalVal - totalGain;
+            
+            const totalGainPct = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0;
+
+            document.getElementById('total-val').textContent = fmt(totalVal);
+            document.getElementById('invested-val').textContent = fmt(totalInvested);
+            document.getElementById('gain-val').textContent = fmt(totalGain);
+            
+            const gainBadge = document.getElementById('gain-pct-badge');
+            gainBadge.textContent = `${fmtPct(totalGainPct)} sur le capital investi`;
+            gainBadge.className = `metric-sub ${totalGainPct >= 0 ? 'text-positive' : 'text-negative'}`;
+
+            document.getElementById('center-total').textContent = fmt(totalVal);
+            document.getElementById('center-sub').textContent = `${items.length} support${items.length > 1 ? 's' : ''}`;
+
+            const slicesGroup = document.getElementById('slices-group');
+            slicesGroup.innerHTML = '';
+
+            if (totalVal <= 0) return;
+
+            const outerRadius = 130;
+            const innerRadius = 90;
+            const gap = 0.03;
+            let currentAngle = -Math.PI / 2;
+
+            items.forEach((item) => {
+                if (item.value <= 0) return;
+
+                const share = item.value / totalVal;
+                const sliceAngle = share * (Math.PI * 2);
+                const startAngle = currentAngle + gap / 2;
+                const endAngle = currentAngle + sliceAngle - gap / 2;
+
+                const pathD = getArcPath(startAngle, endAngle, innerRadius, outerRadius);
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', pathD);
+                path.setAttribute('fill', item.color);
+                path.setAttribute('class', 'donut-slice');
+
+                path.addEventListener('mousemove', (e) => showTooltip(e, item, share, totalVal));
+                path.addEventListener('mouseleave', hideTooltip);
+
+                slicesGroup.appendChild(path);
+
+                currentAngle += sliceAngle;
+            });
+        }
+
+        function getArcPath(startAngle, endAngle, innerRadius, outerRadius) {
+            const x1 = outerRadius * Math.cos(startAngle);
+            const y1 = outerRadius * Math.sin(startAngle);
+            const x2 = outerRadius * Math.cos(endAngle);
+            const y2 = outerRadius * Math.sin(endAngle);
+            const x3 = innerRadius * Math.cos(endAngle);
+            const y3 = innerRadius * Math.sin(endAngle);
+            const x4 = innerRadius * Math.cos(startAngle);
+            const y4 = innerRadius * Math.sin(startAngle);
+            const largeArcFlag = (endAngle - startAngle) > Math.PI ? 1 : 0;
+
+            return `M ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x4} ${y4} Z`;
+        }
+
+        function updateItem(index, field, value) {
+            items[index][field] = value;
+            render();
+        }
+
+        function addRow() {
+            const colors = ['#f43f5e', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b'];
+            const randomColor = colors[items.length % colors.length];
+            items.push({
+                id: Date.now(),
+                name: 'Nouveau Support',
+                value: 1000,
+                gain: 0,
+                color: randomColor
+            });
+            render();
+        }
+
+        function deleteRow(index) {
+            items.splice(index, 1);
+            render();
+        }
+
+        function resetToDefault() {
+            items = JSON.parse(JSON.stringify(defaultItems));
+            render();
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+        }
+
+        const tooltip = document.getElementById('tooltip');
+        function showTooltip(e, item, share, totalVal) {
+            const invested = item.value - item.gain;
+            const gainPct = invested > 0 ? (item.gain / invested) * 100 : 0;
+
+            document.getElementById('tooltip-dot').style.backgroundColor = item.color;
+            document.getElementById('tooltip-title').textContent = item.name;
+            document.getElementById('tooltip-val').textContent = fmt(item.value);
+            document.getElementById('tooltip-share').textContent = (share * 100).toFixed(1) + '%';
+            document.getElementById('tooltip-invested').textContent = fmt(invested);
+            
+            const gainEl = document.getElementById('tooltip-gain');
+            const gainPctEl = document.getElementById('tooltip-gain-pct');
+            
+            gainEl.textContent = fmt(item.gain);
+            gainPctEl.textContent = fmtPct(gainPct);
+
+            gainEl.className = item.gain >= 0 ? 'text-positive' : 'text-negative';
+            gainPctEl.className = gainPct >= 0 ? 'text-positive' : 'text-negative';
+
+            tooltip.style.opacity = '1';
+            tooltip.style.left = `${e.clientX + 15}px`;
+            tooltip.style.top = `${e.clientY + 15}px`;
+        }
+
+        function hideTooltip() {
+            tooltip.style.opacity = '0';
+        }
+    </script>
+</body>
+</html>
