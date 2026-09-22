@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gestionnaire de Patrimoine Multi-Comptes</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,20 +35,19 @@
             --primary-hover: #0284c7;
             --positive: #4ade80;
             --negative: #f87171;
-            --warning: #facc15;
             
             --radius-lg: 16px;
             --radius-md: 10px;
             --radius-sm: 6px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: var(--ff-sans);
             background-color: var(--bg);
             color: var(--text);
-            padding: 24px;
+            padding: 16px;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -59,14 +58,14 @@
             max-width: 1100px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 16px;
         }
 
         .login-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 32px;
+            padding: 24px;
             max-width: 400px;
             width: 100%;
             margin: auto;
@@ -92,40 +91,44 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            padding-bottom: 16px;
+            gap: 12px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border);
         }
 
-        h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
-        .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+        h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+        .subtitle { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
         }
 
         .metric-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 18px 20px;
+            padding: 14px 16px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
         }
 
         .metric-label {
-            font-size: 13px;
+            font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
-        .metric-value { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
-        .metric-sub { font-size: 13px; font-weight: 500; }
+        .metric-value { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+        .metric-sub { font-size: 12px; font-weight: 500; }
 
         .text-positive { color: var(--positive); }
         .text-negative { color: var(--negative); }
@@ -133,11 +136,11 @@
 
         .main-layout {
             display: grid;
-            grid-template-columns: 1fr 1.3fr;
-            gap: 24px;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 16px;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 850px) {
             .main-layout { grid-template-columns: 1fr; }
         }
 
@@ -145,7 +148,7 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 24px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
         }
@@ -154,15 +157,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
-        .card-title { font-size: 18px; font-weight: 600; }
+        .card-title { font-size: 16px; font-weight: 600; }
 
         .chart-wrapper {
             position: relative;
             width: 100%;
-            max-width: 320px;
+            max-width: 280px;
             aspect-ratio: 1;
             margin: 0 auto;
         }
@@ -176,41 +179,95 @@
             outline: none;
         }
 
-        .donut-slice:hover { transform: scale(1.04); }
+        .donut-slice:hover, .donut-slice:active { transform: scale(1.04); }
 
         .center-title { font-size: 12px; fill: var(--text-muted); text-anchor: middle; }
-        .center-value { font-size: 24px; font-weight: 700; fill: var(--text); text-anchor: middle; }
+        .center-value { font-size: 22px; font-weight: 700; fill: var(--text); text-anchor: middle; }
         .center-sub { font-size: 12px; fill: var(--text-muted); text-anchor: middle; }
 
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-
-        th {
-            color: var(--text-muted);
-            font-weight: 500;
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-            font-size: 12px;
-            text-transform: uppercase;
+        /* Style adaptatif des items (Tableau PC / Cartes Mobile) */
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
+        .item-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-        .input-text, .input-num, .input-color {
+        .item-row-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-row-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .item-row-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 6px;
+            border-top: 1px dashed var(--border);
+            font-size: 13px;
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--surface);
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+        }
+
+        .input-text, .input-num {
             background: var(--bg);
             border: 1px solid var(--border);
             color: var(--text);
-            padding: 6px 10px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
             font-family: inherit;
             width: 100%;
         }
 
         .input-text:focus, .input-num:focus { outline: none; border-color: var(--primary); }
         .input-num { text-align: right; font-family: var(--ff-mono); }
-        .input-color { padding: 2px; height: 32px; width: 32px; cursor: pointer; border: none; background: transparent; }
+        
+        .input-color-wrapper {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--border);
+        }
+
+        .input-color {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            cursor: pointer;
+            border: none;
+        }
 
         .input-checkbox {
             width: 18px;
@@ -228,30 +285,34 @@
             color: #0f172a;
             border: none;
             border-radius: var(--radius-md);
-            padding: 8px 16px;
-            font-size: 13px;
+            padding: 10px 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s ease;
+            min-height: 44px;
         }
 
         .btn:hover { background: var(--primary-hover); }
-        .btn-danger { background: transparent; color: var(--negative); padding: 6px; border-radius: var(--radius-sm); }
+        .btn-danger { background: transparent; color: var(--negative); padding: 8px; border-radius: var(--radius-sm); min-height: 36px; }
         .btn-danger:hover { background: rgba(248, 113, 113, 0.1); }
         .btn-secondary { background: var(--surface-hover); color: var(--text); }
-        .btn-secondary:hover { background: #475569; }
-        .btn-logout { background: transparent; color: var(--negative); border: 1px solid var(--negative); }
-        .btn-logout:hover { background: rgba(248, 113, 113, 0.1); }
+        .btn-logout { background: transparent; color: var(--negative); border: 1px solid var(--negative); padding: 8px 12px; }
 
-        .actions-bar { display: flex; justify-content: space-between; margin-top: 16px; gap: 12px; }
-        .badge-pct { font-family: var(--ff-mono); font-size: 12px; padding: 2px 6px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); }
+        .actions-bar { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+
+        @media (min-width: 600px) {
+            .actions-bar { flex-direction: row; justify-content: space-between; }
+        }
+
+        .badge-pct { font-family: var(--ff-mono); font-size: 13px; font-weight: 600; }
 
         .tooltip {
             position: fixed;
             background: #090d16;
             border: 1px solid var(--border);
             color: var(--text);
-            padding: 8px 12px;
+            padding: 12px 16px;
             border-radius: var(--radius-md);
             font-size: 13px;
             pointer-events: none;
@@ -261,12 +322,22 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
-        .tooltip-header { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-        .tooltip-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .tooltip-body { color: var(--text-muted); font-size: 12px; display: flex; flex-direction: column; gap: 2px; }
+        @media (max-width: 600px) {
+            .tooltip {
+                left: 16px !important;
+                right: 16px !important;
+                bottom: 16px !important;
+                top: auto !important;
+                width: auto;
+            }
+        }
+
+        .tooltip-header { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }
+        .tooltip-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .tooltip-body { color: var(--text-muted); font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
     </style>
 </head>
 <body>
@@ -277,11 +348,11 @@
         <form id="login-form">
             <div class="input-group">
                 <label>Adresse E-mail</label>
-                <input type="email" id="email" class="input-text" required>
+                <input type="email" id="email" class="input-text" required placeholder="nom@exemple.com">
             </div>
             <div class="input-group" style="margin-top: 12px;">
                 <label>Mot de passe</label>
-                <input type="password" id="password" class="input-text" required>
+                <input type="password" id="password" class="input-text" required placeholder="••••••••">
             </div>
             <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">Se connecter</button>
             <div id="login-error" style="color: var(--negative); font-size: 13px; margin-top: 12px; text-align: center;"></div>
@@ -292,43 +363,45 @@
     <div id="app-container" class="container hidden">
         <header>
             <div>
-                <h1>Camembert de Patrimoine & Plus-Values</h1>
-                <div class="subtitle" id="user-display">Connecté : ...</div>
+                <h1>Patrimoine & PV</h1>
+                <div class="subtitle" id="user-display">...</div>
             </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-secondary" onclick="saveData()">💾 Enregistrer</button>
-                <button class="btn btn-logout" onclick="logout()">Déconnexion</button>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="saveData()">💾</button>
+                <button class="btn btn-logout" onclick="logout()">🚪</button>
             </div>
         </header>
 
         <div class="metrics-grid">
             <div class="metric-card">
-                <span class="metric-label">Patrimoine Total</span>
+                <span class="metric-label">Patrimoine</span>
                 <span class="metric-value" id="total-val">0 €</span>
-                <span class="metric-sub text-primary">Valeur actuelle totale</span>
+                <span class="metric-sub text-primary">Valeur totale</span>
             </div>
             <div class="metric-card">
-                <span class="metric-label">Capital Investi</span>
+                <span class="metric-label">Capital</span>
                 <span class="metric-value" id="invested-val">0 €</span>
-                <span class="metric-sub" style="color: var(--text-muted)">Total des versements</span>
+                <span class="metric-sub" style="color: var(--text-muted)">Versements</span>
             </div>
-            <div class="metric-card">
+            <div class="metric-card" style="grid-column: span 2;">
                 <span class="metric-label">Plus-Value (Sélection)</span>
-                <span class="metric-value" id="gain-val">0 €</span>
-                <span class="metric-sub" id="gain-pct-badge">+0.00% sur le capital</span>
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <span class="metric-value" id="gain-val">0 €</span>
+                    <span class="metric-sub" id="gain-pct-badge">+0.00%</span>
+                </div>
             </div>
         </div>
 
         <div class="main-layout">
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">Répartition Globale</span>
+                    <span class="card-title">Répartition Visuelle</span>
                 </div>
                 <div class="chart-wrapper">
                     <svg id="donut-chart" viewBox="-160 -160 320 320">
                         <g id="slices-group"></g>
                         <g class="center-group">
-                            <text class="center-title" y="-18">Patrimoine Visuel</text>
+                            <text class="center-title" y="-18">Sélection</text>
                             <text class="center-value" id="center-total" y="10">0 €</text>
                             <text class="center-sub" id="center-sub" y="32">0 supports</text>
                         </g>
@@ -338,25 +411,11 @@
 
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">Détail des Supports</span>
+                    <span class="card-title">Supports</span>
                 </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 30px; text-align: center;" title="Inclure dans la plus-value globale">PV</th>
-                                <th style="width: 30px; text-align: center;" title="Afficher dans le graphique camembert">Chart</th>
-                                <th style="width: 40px">Couleur</th>
-                                <th>Support</th>
-                                <th style="text-align: right">Solde Total (€)</th>
-                                <th style="text-align: right">Dont PV (€)</th>
-                                <th style="text-align: right">% PV / Capital</th>
-                                <th style="width: 40px"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body"></tbody>
-                    </table>
-                </div>
+                
+                <div id="items-container" class="items-list"></div>
+
                 <div class="actions-bar">
                     <button class="btn" onclick="addRow()">+ Ajouter un support</button>
                     <button class="btn btn-secondary" onclick="resetToDefault()">Réinitialiser</button>
@@ -371,7 +430,7 @@
             <span id="tooltip-title">Support</span>
         </div>
         <div class="tooltip-body">
-            <div>Solde : <strong id="tooltip-val" style="color: var(--text)">0 €</strong> (<span id="tooltip-share">0%</span> du total visuel)</div>
+            <div>Solde : <strong id="tooltip-val" style="color: var(--text)">0 €</strong> (<span id="tooltip-share">0%</span>)</div>
             <div>Capital : <span id="tooltip-invested">0 €</span></div>
             <div>Plus-value : <span id="tooltip-gain" class="text-positive">0 €</span> (<strong id="tooltip-gain-pct" class="text-positive">+0%</strong>)</div>
         </div>
@@ -399,12 +458,12 @@
             const password = document.getElementById('password').value;
             const errDiv = document.getElementById('login-error');
 
-            errDiv.textContent = "Connexion en cours...";
+            errDiv.textContent = "Connexion...";
 
             const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
 
             if (error) {
-                errDiv.textContent = "Identifiants incorrects ou erreur réseau.";
+                errDiv.textContent = "Identifiants incorrects.";
             } else if (data && data.user) {
                 initDashboard(data.user);
             }
@@ -419,7 +478,7 @@
         async function initDashboard(user) {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
-            document.getElementById('user-display').textContent = `Connecté : ${user.email}`;
+            document.getElementById('user-display').textContent = user.email;
 
             const { data } = await sbClient.from('patrimoine').select('data').maybeSingle();
 
@@ -446,23 +505,23 @@
             }, { onConflict: 'user_id' });
 
             if (error) {
-                alert("Erreur de sauvegarde : " + error.message);
+                alert("Erreur : " + error.message);
             } else {
-                alert("Données enregistrées avec succès !");
+                alert("Enregistré !");
             }
         }
 
-        const fmt = (val) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(val);
+        const fmt = (val) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(val);
         const fmtPct = (val) => (val >= 0 ? '+' : '') + val.toFixed(2) + '%';
 
         function render() {
-            renderTable();
+            renderList();
             renderMetricsAndChart();
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
+        function renderList() {
+            const container = document.getElementById('items-container');
+            container.innerHTML = '';
 
             items.forEach((item, idx) => {
                 const invested = item.value - item.gain;
@@ -470,36 +529,47 @@
                 const isCheckedGain = item.includeGain !== false;
                 const isCheckedChart = item.showInChart !== false;
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="text-align: center;">
-                        <input type="checkbox" class="input-checkbox" ${isCheckedGain ? 'checked' : ''} onchange="updateItem(${idx}, 'includeGain', this.checked)">
-                    </td>
-                    <td style="text-align: center;">
-                        <input type="checkbox" class="input-checkbox" ${isCheckedChart ? 'checked' : ''} onchange="updateItem(${idx}, 'showInChart', this.checked)">
-                    </td>
-                    <td>
-                        <input type="color" class="input-color" value="${item.color}" onchange="updateItem(${idx}, 'color', this.value)">
-                    </td>
-                    <td>
-                        <input type="text" class="input-text" value="${escapeHtml(item.name)}" onchange="updateItem(${idx}, 'name', this.value)">
-                    </td>
-                    <td>
-                        <input type="number" class="input-num" value="${item.value}" step="any" onchange="updateItem(${idx}, 'value', parseFloat(this.value) || 0)">
-                    </td>
-                    <td>
-                        <input type="number" class="input-num" value="${item.gain}" step="any" onchange="updateItem(${idx}, 'gain', parseFloat(this.value) || 0)">
-                    </td>
-                    <td style="text-align: right">
-                        <span class="badge-pct ${gainPct >= 0 ? 'text-positive' : 'text-negative'}">
-                            ${fmtPct(gainPct)}
-                        </span>
-                    </td>
-                    <td>
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-row-top">
+                        <div class="input-color-wrapper">
+                            <input type="color" class="input-color" value="${item.color}" onchange="updateItem(${idx}, 'color', this.value)">
+                        </div>
+                        <input type="text" class="input-text" value="${escapeHtml(item.name)}" onchange="updateItem(${idx}, 'name', this.value)" placeholder="Nom">
                         <button class="btn-danger" onclick="deleteRow(${idx})" title="Supprimer">✕</button>
-                    </td>
+                    </div>
+
+                    <div class="item-row-inputs">
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-muted);">Solde (€)</span>
+                            <input type="number" class="input-num" value="${item.value}" step="any" onchange="updateItem(${idx}, 'value', parseFloat(this.value) || 0)">
+                        </div>
+                        <div>
+                            <span style="font-size: 11px; color: var(--text-muted);">Dont PV (€)</span>
+                            <input type="number" class="input-num" value="${item.gain}" step="any" onchange="updateItem(${idx}, 'gain', parseFloat(this.value) || 0)">
+                        </div>
+                    </div>
+
+                    <div class="item-row-bottom">
+                        <div style="display: flex; gap: 8px;">
+                            <label class="toggle-group">
+                                <input type="checkbox" class="input-checkbox" ${isCheckedGain ? 'checked' : ''} onchange="updateItem(${idx}, 'includeGain', this.checked)">
+                                PV
+                            </label>
+                            <label class="toggle-group">
+                                <input type="checkbox" class="input-checkbox" ${isCheckedChart ? 'checked' : ''} onchange="updateItem(${idx}, 'showInChart', this.checked)">
+                                Graph
+                            </label>
+                        </div>
+                        <div>
+                            <span class="badge-pct ${gainPct >= 0 ? 'text-positive' : 'text-negative'}">
+                                ${fmtPct(gainPct)}
+                            </span>
+                        </div>
+                    </div>
                 `;
-                tbody.appendChild(tr);
+                container.appendChild(card);
             });
         }
 
@@ -508,7 +578,6 @@
             const totalGainAll = items.reduce((sum, item) => sum + item.gain, 0);
             const totalInvested = totalVal - totalGainAll;
 
-            // Filtrage : calcul de la plus-value
             const filteredGain = items
                 .filter(item => item.includeGain !== false)
                 .reduce((sum, item) => sum + item.gain, 0);
@@ -524,10 +593,9 @@
             document.getElementById('gain-val').textContent = fmt(filteredGain);
             
             const gainBadge = document.getElementById('gain-pct-badge');
-            gainBadge.textContent = `${fmtPct(totalGainPct)} sur le capital`;
+            gainBadge.textContent = fmtPct(totalGainPct);
             gainBadge.className = `metric-sub ${totalGainPct >= 0 ? 'text-positive' : 'text-negative'}`;
 
-            // Filtrage pour le graphique camembert
             const chartItems = items.filter(item => item.showInChart !== false);
             const chartTotalVal = chartItems.reduce((sum, item) => sum + item.value, 0);
 
@@ -559,7 +627,10 @@
                 path.setAttribute('fill', item.color);
                 path.setAttribute('class', 'donut-slice');
 
-                path.addEventListener('mousemove', (e) => showTooltip(e, item, share, chartTotalVal));
+                // Support mobile + PC
+                const handleInteraction = (e) => showTooltip(e, item, share, chartTotalVal);
+                path.addEventListener('mousemove', handleInteraction);
+                path.addEventListener('click', handleInteraction);
                 path.addEventListener('mouseleave', hideTooltip);
 
                 slicesGroup.appendChild(path);
@@ -592,7 +663,7 @@
             const randomColor = colors[items.length % colors.length];
             items.push({
                 id: Date.now(),
-                name: 'Nouveau Support',
+                name: 'Nouveau',
                 value: 1000,
                 gain: 0,
                 color: randomColor,
@@ -618,6 +689,7 @@
 
         const tooltip = document.getElementById('tooltip');
         function showTooltip(e, item, share, totalVal) {
+            e.stopPropagation();
             const invested = item.value - item.gain;
             const gainPct = invested > 0 ? (item.gain / invested) * 100 : 0;
 
@@ -637,13 +709,22 @@
             gainPctEl.className = gainPct >= 0 ? 'text-positive' : 'text-negative';
 
             tooltip.style.opacity = '1';
-            tooltip.style.left = `${e.clientX + 15}px`;
-            tooltip.style.top = `${e.clientY + 15}px`;
+
+            if (window.innerWidth > 600) {
+                tooltip.style.left = `${e.clientX + 15}px`;
+                tooltip.style.top = `${e.clientY + 15}px`;
+            }
         }
 
         function hideTooltip() {
             tooltip.style.opacity = '0';
         }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('donut-slice')) {
+                hideTooltip();
+            }
+        });
     </script>
 </body>
 </html>
