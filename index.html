@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liste de Courses IA & Leclerc/Intermarché</title>
+    <title>Camembert de Patrimoine & Plus-Values</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Client JS Supabase -->
+    <!-- Client Supabase & Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         @font-face {
@@ -23,7 +24,7 @@
             --ff-sans: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             --ff-mono: 'SF Mono', 'Menlo', Monaco, Consolas, monospace;
 
-            --bg: #0f172a;
+            --bg: #0b1120;
             --surface: #1e293b;
             --surface-hover: #334155;
             --border: #334155;
@@ -47,7 +48,7 @@
             font-family: var(--ff-sans);
             background-color: var(--bg);
             color: var(--text);
-            padding: 12px;
+            padding: 20px;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -55,17 +56,17 @@
 
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 1100px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 20px;
         }
 
         .login-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 24px;
+            padding: 30px;
             max-width: 400px;
             width: 100%;
             margin: auto;
@@ -93,27 +94,25 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
         }
 
-        h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+        h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
         .subtitle { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
         }
 
         .metric-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 12px 14px;
+            border-radius: var(--radius-lg);
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
         .metric-label {
@@ -123,114 +122,87 @@
             letter-spacing: 0.05em;
         }
 
-        .metric-value { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
-        .metric-sub { font-size: 11px; color: var(--text-muted); }
+        .metric-value { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+        .metric-sub { font-size: 12px; color: var(--text-muted); }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
 
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 16px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 16px;
         }
 
         .card-title { font-size: 16px; font-weight: 600; }
 
-        .items-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 280px;
+            margin: auto;
+            aspect-ratio: 1;
         }
 
-        .item-row {
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 10px 4px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+            vertical-align: middle;
+        }
+
+        .color-picker {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .input-text, .input-num {
             background: var(--bg);
             border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            transition: opacity 0.2s;
-        }
-
-        .item-row.row-checked {
-            opacity: 0.4;
-            border-color: transparent;
-        }
-
-        .item-row.row-checked .item-name {
-            text-decoration: line-through;
-        }
-
-        .item-top {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            position: relative;
-        }
-
-        .item-bottom {
-            display: grid;
-            grid-template-columns: 1fr 75px 75px 36px;
-            gap: 6px;
-            align-items: center;
-        }
-
-        @media (max-width: 480px) {
-            .item-bottom {
-                grid-template-columns: 1fr 65px 65px 32px;
-                gap: 4px;
-            }
-        }
-
-        .input-text, .input-num, .input-select {
-            background: var(--surface);
-            border: 1px solid var(--border);
             color: var(--text);
-            padding: 8px 10px;
+            padding: 6px 10px;
             border-radius: var(--radius-sm);
-            font-size: 14px;
+            font-size: 13px;
             font-family: inherit;
             width: 100%;
         }
 
-        .input-text:focus, .input-num:focus, .input-select:focus { outline: none; border-color: var(--primary); }
-        .input-num { text-align: right; font-family: var(--ff-mono); }
-        .input-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: var(--primary); flex-shrink: 0; }
-
-        .suggestions-box {
-            position: absolute;
-            top: 100%;
-            left: 32px;
-            right: 0;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            z-index: 50;
-            max-height: 180px;
-            overflow-y: auto;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
-        }
-
-        .suggestion-item {
-            padding: 8px 12px;
-            font-size: 13px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .suggestion-item:hover {
-            background: var(--surface-hover);
-            color: var(--primary);
-        }
+        .input-num { text-align: right; font-family: var(--ff-mono); width: 85px; }
+        .input-text:focus, .input-num:focus { outline: none; border-color: var(--primary); }
 
         .btn {
             display: inline-flex;
@@ -238,29 +210,42 @@
             justify-content: center;
             gap: 6px;
             background: var(--primary);
-            color: #0f172a;
+            color: #0b1120;
             border: none;
             border-radius: var(--radius-md);
-            padding: 10px 14px;
-            font-size: 14px;
+            padding: 8px 14px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
         }
-
         .btn:hover { background: var(--primary-hover); }
-        .btn-danger { background: rgba(248, 113, 113, 0.1); color: var(--negative); border: none; border-radius: var(--radius-sm); height: 36px; width: 36px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        .btn-secondary { background: var(--surface-hover); color: var(--text); padding: 8px 12px; font-size: 13px; }
-        .btn-logout { background: transparent; color: var(--negative); border: 1px solid var(--negative); font-size: 12px; padding: 6px 10px; }
 
-        .actions-bar { display: flex; gap: 8px; margin-top: 4px; }
-        .actions-bar .btn { flex: 1; }
+        .btn-danger {
+            background: rgba(248, 113, 113, 0.1);
+            color: var(--negative);
+            border: none;
+            border-radius: var(--radius-sm);
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-danger:hover { background: rgba(248, 113, 113, 0.2); }
 
-        .ai-status {
-            font-size: 11px;
-            color: var(--primary);
-            font-style: italic;
-            white-space: nowrap;
-            margin-left: 6px;
+        .btn-secondary {
+            background: var(--surface-hover);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: var(--border); }
+
+        .actions-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
         }
     </style>
 </head>
@@ -268,7 +253,7 @@
 
     <!-- Écran de Connexion -->
     <div id="login-screen" class="login-card">
-        <h2 style="text-align: center;">Connexion Courses</h2>
+        <h2 style="text-align: center;">Connexion Patrimoine</h2>
         <form id="login-form">
             <div class="input-group">
                 <label>Adresse E-mail</label>
@@ -287,42 +272,66 @@
     <div id="app-container" class="container hidden">
         <header>
             <div>
-                <h1>🛒 Ma Liste IA (Leclerc / Intermarché)</h1>
-                <div class="subtitle" id="user-display">Connecté</div>
+                <h1>Camembert de Patrimoine & Plus-Values</h1>
+                <div class="subtitle" id="user-display">Connecté : ...</div>
             </div>
-            <div style="display: flex; gap: 6px;">
-                <button class="btn btn-secondary" onclick="saveData()">💾 Sauver</button>
-                <button class="btn btn-secondary" onclick="configureAI()" title="Configurer l'IA">⚙️ IA</button>
-                <button class="btn btn-logout" onclick="logout()">Quitter</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary" onclick="saveData()">💾 Enregistrer</button>
+                <button class="btn btn-secondary" onclick="logout()" style="color: var(--negative); border-color: rgba(248,113,113,0.3);">Déconnexion</button>
             </div>
         </header>
 
         <div class="metrics-grid">
             <div class="metric-card">
-                <span class="metric-label">Total Estimé</span>
-                <span class="metric-value text-primary" id="total-est">0 €</span>
-                <span class="metric-sub" id="items-count">0 articles</span>
+                <span class="metric-label">Patrimoine Total</span>
+                <span class="metric-value" style="color: var(--primary);" id="total-patrimoine">0,00 €</span>
+                <span class="metric-sub">Valeur actuelle totale</span>
             </div>
             <div class="metric-card">
-                <span class="metric-label">Panier (Cochés)</span>
-                <span class="metric-value" style="color: var(--positive);" id="total-checked">0 €</span>
-                <span class="metric-sub" id="checked-count">0 / 0 pris</span>
+                <span class="metric-label">Capital Investi</span>
+                <span class="metric-value" id="total-capital">0,00 €</span>
+                <span class="metric-sub">Total des versements</span>
+            </div>
+            <div class="metric-card">
+                <span class="metric-label">Plus-Value Totale</span>
+                <span class="metric-value" style="color: var(--positive);" id="total-pv">0,00 €</span>
+                <span class="metric-sub" id="total-pv-pct">+0.00% sur le capital investi</span>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">Articles</span>
-                <button class="btn btn-secondary" onclick="clearChecked()" style="font-size: 11px; padding: 4px 8px;">Nettoyer pris</button>
-            </div>
-            
-            <div class="items-list" id="items-list-container">
-                <!-- Généré dynamiquement -->
+        <div class="main-grid">
+            <!-- Camembert -->
+            <div class="card" style="align-items: center; justify-content: center;">
+                <div class="card-title" style="align-self: flex-start;">Répartition Globale</div>
+                <div class="chart-container">
+                    <canvas id="patrimoineChart"></canvas>
+                </div>
             </div>
 
-            <div class="actions-bar">
-                <button class="btn" onclick="addRow()">+ Ajouter</button>
-                <button class="btn btn-secondary" onclick="resetToDefault()">Reset</button>
+            <!-- Tableau des supports -->
+            <div class="card">
+                <div class="card-title">Détail des Supports</div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Couleur</th>
+                                <th>Support</th>
+                                <th style="text-align: right;">Solde Total (€)</th>
+                                <th style="text-align: right;">Dont PV (€)</th>
+                                <th style="text-align: right;">% PV / Capital</th>
+                                <th style="text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supports-tbody">
+                            <!-- Généré dynamiquement -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="actions-row">
+                    <button class="btn" onclick="addRow()">+ Ajouter un support</button>
+                    <button class="btn btn-secondary" onclick="resetData()" style="font-size: 12px;">Réinitialiser</button>
+                </div>
             </div>
         </div>
     </div>
@@ -332,44 +341,17 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1dW9lZWpkbXppdGpwc3ZoaG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5OTA2MTQsImV4cCI6MjEwNTU2NjYxNH0.JO0r78pD5cqOa0ZYwr_4W0CHM3tcKRzCWjgfcqCjqlg";
 
         const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const categoriesList = ['Fruits & Légumes', 'Frais & Boucherie', 'Épicerie', 'Boissons', 'Entretien & Hygiene', 'Divers'];
+        let chartInstance = null;
 
-        const productCatalog = [
-            { name: 'Eco+ - Œufs x6', category: 'Frais & Boucherie', price: 1.65, qty: '6 p.' },
-            { name: 'Marque Repère - Lait demi-écrémé (Pack 1L)', category: 'Frais & Boucherie', price: 0.98, qty: '1L' },
-            { name: 'Éco+ - Pâtes Coquillettes 1kg', category: 'Épicerie', price: 0.75, qty: '1 kg' },
-            { name: 'Marque Repère - Riz basmati 1kg', category: 'Épicerie', price: 1.85, qty: '1 kg' },
-            { name: 'Cristaline - Eau de source (Pack 6x1.5L)', category: 'Boissons', price: 1.60, qty: '6x1.5L' },
-            { name: 'Monique Ranou - Poulet escalopes', category: 'Frais & Boucherie', price: 6.20, qty: '500g' },
-            { name: 'Paturages - Beurre doux 250g', category: 'Frais & Boucherie', price: 2.15, qty: '250g' }
+        const defaultSupports = [
+            { name: 'PEA', balance: 6883, pv: 679, color: '#38bdf8' },
+            { name: 'Livret A', balance: 2600, pv: 0, color: '#4ade80' },
+            { name: 'Compte courant', balance: 500, pv: 0, color: '#facc15' },
+            { name: 'Crypto', balance: 369, pv: 62, color: '#f87171' },
+            { name: 'CTO', balance: 261, pv: 8, color: '#c084fc' }
         ];
 
-        const defaultItems = [
-            { id: 1, name: 'Marque Repère - Lait demi-écrémé (Pack 1L)', category: 'Frais & Boucherie', qty: '1L', price: 0.98, checked: false },
-            { id: 2, name: 'Eco+ - Œufs x6', category: 'Frais & Boucherie', qty: '6 p.', price: 1.65, checked: false }
-        ];
-
-        let items = [];
-
-        function getGroqKey() {
-            let key = localStorage.getItem('groq_api_key');
-            if (!key) {
-                key = prompt("Entre ta clé API Groq (gsk_...) pour activer l'intelligence artificielle :");
-                if (key) {
-                    localStorage.setItem('groq_api_key', key.trim());
-                }
-            }
-            return key;
-        }
-
-        function configureAI() {
-            const current = localStorage.getItem('groq_api_key') || '';
-            const newKey = prompt("Modifier la clé API Groq :", current);
-            if (newKey !== null) {
-                localStorage.setItem('groq_api_key', newKey.trim());
-                alert("Clé mise à jour !");
-            }
-        }
+        let supports = [];
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -396,10 +378,10 @@
         async function initDashboard(user) {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
-            document.getElementById('user-display').textContent = user.email.split('@')[0];
+            document.getElementById('user-display').textContent = `Connecté : ${user.email}`;
 
-            const { data } = await sbClient.from('courses_list').select('items').maybeSingle();
-            items = (data && data.items && Array.isArray(data.items)) ? data.items : JSON.parse(JSON.stringify(defaultItems));
+            const { data } = await sbClient.from('patrimoine').select('data').maybeSingle();
+            supports = (data && data.supports && Array.isArray(data.supports)) ? data.supports : JSON.parse(JSON.stringify(defaultSupports));
             render();
         }
 
@@ -407,214 +389,144 @@
             const { data: { user } } = await sbClient.auth.getUser();
             if (!user) return;
 
-            const { error } = await sbClient.from('courses_list').upsert({
+            const { error } = await sbClient.from('patrimoine').upsert({
                 user_id: user.id,
-                items: items
+                data: { supports }
             }, { onConflict: 'user_id' });
 
             if (error) {
-                console.error("Erreur Supabase:", error);
                 alert("Erreur de sauvegarde : " + error.message);
             } else {
-                alert("Sauvegardé avec succès !");
+                alert("Enregistré avec succès !");
             }
         }
 
         const fmt = (val) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(val);
 
         function render() {
-            const container = document.getElementById('items-list-container');
-            container.innerHTML = '';
+            const tbody = document.getElementById('supports-tbody');
+            tbody.innerHTML = '';
 
-            items.forEach((item, idx) => {
-                const div = document.createElement('div');
-                div.className = `item-row ${item.checked ? 'row-checked' : ''}`;
+            let totalPatrimoine = 0;
+            let totalPv = 0;
 
-                let optionsHtml = categoriesList.map(cat => 
-                    `<option value="${cat}" ${item.category === cat ? 'selected' : ''}>${cat}</option>`
-                ).join('');
+            supports.forEach((s, idx) => {
+                const balance = Number(s.balance) || 0;
+                const pv = Number(s.pv) || 0;
+                const capital = balance - pv;
+                const pctPv = capital > 0 ? (pv / capital) * 100 : 0;
 
-                div.innerHTML = `
-                    <div class="item-top">
-                        <input type="checkbox" class="input-checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCheck(${idx}, this.checked)">
-                        <div style="position:relative; width: 100%;">
-                            <input type="text" class="input-text item-name" id="name-input-${idx}" value="${escapeHtml(item.name)}" placeholder="Tape un produit (ex: oeuf, coca, brioche...)" oninput="handleSearchInput(${idx}, this.value)" autocomplete="off">
-                            <div class="suggestions-box hidden" id="suggestions-${idx}"></div>
-                        </div>
-                        <span id="ai-status-${idx}" class="ai-status"></span>
-                    </div>
-                    <div class="item-bottom">
-                        <select class="input-select" id="cat-input-${idx}" onchange="updateItem(${idx}, 'category', this.value)">
-                            ${optionsHtml}
-                        </select>
-                        <input type="text" class="input-text" id="qty-input-${idx}" style="text-align: center;" value="${escapeHtml(item.qty || '')}" placeholder="Qté" onchange="updateItem(${idx}, 'qty', this.value)">
-                        <input type="number" class="input-num" id="price-input-${idx}" value="${item.price || 0}" step="0.05" onchange="updateItem(${idx}, 'price', parseFloat(this.value) || 0)">
-                        <button class="btn-danger" onclick="deleteRow(${idx})" title="Supprimer">✕</button>
-                    </div>
+                totalPatrimoine += balance;
+                totalPv += pv;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="color" class="color-picker" value="${s.color || '#38bdf8'}" onchange="updateSupport(${idx}, 'color', this.value)"></td>
+                    <td><input type="text" class="input-text" value="${escapeHtml(s.name)}" onchange="updateSupport(${idx}, 'name', this.value)"></td>
+                    <td style="text-align: right;"><input type="number" class="input-num" value="${balance}" step="1" onchange="updateSupport(${idx}, 'balance', parseFloat(this.value) || 0)"></td>
+                    <td style="text-align: right;"><input type="number" class="input-num" value="${pv}" step="1" onchange="updateSupport(${idx}, 'pv', parseFloat(this.value) || 0)"></td>
+                    <td style="text-align: right; font-family: var(--ff-mono); color: ${pctPv >= 0 ? 'var(--positive)' : 'var(--negative)'}; font-weight: 600;">
+                        ${pctPv >= 0 ? '+' : ''}${pctPv.toFixed(2)}%
+                    </td>
+                    <td style="text-align: center;"><button class="btn-danger" onclick="deleteRow(${idx})">✕</button></td>
                 `;
-                container.appendChild(div);
+                tbody.appendChild(tr);
             });
-            renderMetrics();
+
+            const totalCapital = totalPatrimoine - totalPv;
+            const totalPct = totalCapital > 0 ? (totalPv / totalCapital) * 100 : 0;
+
+            document.getElementById('total-patrimoine').textContent = fmt(totalPatrimoine);
+            document.getElementById('total-capital').textContent = fmt(totalCapital);
+            document.getElementById('total-pv').textContent = fmt(totalPv);
+            document.getElementById('total-pv-pct').textContent = `${totalPct >= 0 ? '+' : ''}${totalPct.toFixed(2)}% sur le capital investi`;
+
+            renderChart(totalPatrimoine);
         }
 
-        function normalizeStr(str) {
-            if (!str) return '';
-            return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/oe/g, "œ");
-        }
+        function renderChart(totalPatrimoine) {
+            const ctx = document.getElementById('patrimoineChart').getContext('2d');
+            const labels = supports.map(s => s.name);
+            const dataVals = supports.map(s => s.balance);
+            const colors = supports.map(s => s.color || '#38bdf8');
 
-        function handleSearchInput(index, query) {
-            items[index].name = query;
-            renderMetrics();
-
-            const box = document.getElementById(`suggestions-${index}`);
-            if (!query || query.trim().length < 2) {
-                box.classList.add('hidden');
-                return;
+            if (chartInstance) {
+                chartInstance.destroy();
             }
 
-            const cleanQ = normalizeStr(query);
-            const matches = productCatalog.filter(p => normalizeStr(p.name).includes(cleanQ));
-
-            if (matches.length > 0) {
-                box.innerHTML = matches.map(m => `
-                    <div class="suggestion-item" onclick="selectSuggestion(${index}, '${escapeHtml(m.name).replace(/'/g, "\\'")}', '${m.category}', ${m.price}, '${m.qty}')">
-                        ⭐ <strong>${m.name}</strong> <span style="color:var(--text-muted); font-size:11px;">(${m.price}€)</span>
-                    </div>
-                `).join('');
-                box.classList.remove('hidden');
-            } else {
-                box.classList.add('hidden');
-            }
-        }
-
-        function selectSuggestion(index, name, category, price, qty) {
-            items[index].name = name;
-            items[index].category = category;
-            items[index].price = price;
-            items[index].qty = qty;
-
-            document.getElementById(`suggestions-${index}`).classList.add('hidden');
-            render();
-        }
-
-        async function triggerAI(index, query) {
-            if (!query || query.trim().length < 2) return;
-            
-            const apiKey = getGroqKey();
-            if (!apiKey) return;
-
-            const statusSpan = document.getElementById(`ai-status-${index}`);
-            statusSpan.textContent = "🤖 IA...";
-
-            try {
-                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'llama-3.1-8b-instant',
-                        messages: [
-                            {
-                                role: 'system',
-                                content: 'Tu es un assistant de courses en France. L’utilisateur écrit un produit (ex: "lait", "oeuf bio", "brioche"). Renvoie STRICTEMENT un objet JSON valide avec ces clés : "name" (nom propre du produit axé sur les enseignes E.Leclerc comme Marque Repère, Eco+ ou Intermarché si pertinent), "category" (doit être l’une de ces valeurs exactes : "Fruits & Légumes", "Frais & Boucherie", "Épicerie", "Boissons", "Entretien & Hygiene", "Divers"), "qty" (quantité type "1L", "6 p.", "1 kg", "1"), "price" (prix moyen estimé en hypermarché en euros sous forme de nombre ex: 1.50).'
-                            },
-                            {
-                                role: 'user',
-                                content: query
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataVals,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    let value = context.parsed || 0;
+                                    let percentage = totalPatrimoine > 0 ? ((value / totalPatrimoine) * 100).toFixed(1) + '%' : '0%';
+                                    return ` ${label}: ${fmt(value)} (${percentage})`;
+                                }
                             }
-                        ],
-                        response_format: { type: "json_object" }
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                if (data.choices && data.choices[0] && data.choices[0].message) {
-                    const contentStr = data.choices[0].message.content;
-                    const result = JSON.parse(contentStr);
-                    
-                    items[index].name = result.name || query;
-                    items[index].category = result.category || 'Épicerie';
-                    items[index].qty = result.qty || '1';
-                    items[index].price = result.price || 1.00;
-                    
-                    statusSpan.textContent = "✨ OK";
-                    setTimeout(() => statusSpan.textContent = "", 1500);
-                    render();
-                } else {
-                    throw new Error("Structure de réponse invalide");
-                }
-            } catch (err) {
-                console.error("Erreur IA:", err);
-                statusSpan.textContent = "❌ Erreur";
-                setTimeout(() => statusSpan.textContent = "", 2000);
-            }
+                        }
+                    },
+                    cutout: '75%'
+                },
+                plugins: [{
+                    id: 'centerText',
+                    beforeDraw(chart) {
+                        const { width, height, ctx } = chart;
+                        ctx.restore();
+                        ctx.font = "bold 15px 'Google Sans', sans-serif";
+                        ctx.fillStyle = "#f8fafc";
+                        ctx.textBaseline = "middle";
+                        ctx.textAlign = "center";
+                        
+                        const text1 = "Patrimoine";
+                        const text2 = fmt(totalPatrimoine);
+                        const text3 = `${supports.length} supports`;
+                        
+                        ctx.fillText(text1, width / 2, height / 2 - 20);
+                        ctx.font = "bold 18px 'Google Sans', sans-serif";
+                        ctx.fillStyle = "#38bdf8";
+                        ctx.fillText(text2, width / 2, height / 2);
+                        ctx.font = "12px 'Google Sans', sans-serif";
+                        ctx.fillStyle = "#94a3b8";
+                        ctx.fillText(text3, width / 2, height / 2 + 22);
+                        ctx.save();
+                    }
+                }]
+            });
         }
 
-        document.addEventListener('blur', (e) => {
-            if (e.target.classList.contains('item-name')) {
-                const idx = e.target.id.split('-').pop();
-                const val = e.target.value;
-                setTimeout(() => triggerAI(idx, val), 250);
-            }
-        }, true);
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.item-top')) {
-                document.querySelectorAll('.suggestions-box').forEach(b => b.classList.add('hidden'));
-            }
-        });
-
-        function renderMetrics() {
-            const totalEst = items.reduce((sum, item) => sum + (item.price || 0), 0);
-            const checkedItems = items.filter(i => i.checked);
-            const checkedTotal = checkedItems.reduce((sum, item) => sum + (item.price || 0), 0);
-
-            document.getElementById('total-est').textContent = fmt(totalEst);
-            document.getElementById('items-count').textContent = `${items.length} articles`;
-            document.getElementById('total-checked').textContent = fmt(checkedTotal);
-            document.getElementById('checked-count').textContent = `${checkedItems.length} / ${items.length} pris`;
-        }
-
-        function updateItem(index, field, value) {
-            items[index][field] = value;
-            renderMetrics();
-        }
-
-        function toggleCheck(index, isChecked) {
-            items[index].checked = isChecked;
+        function updateSupport(index, field, value) {
+            supports[index][field] = value;
             render();
         }
 
         function addRow() {
-            items.unshift({
-                id: Date.now(),
-                name: '',
-                category: 'Épicerie',
-                qty: '1',
-                price: 1.00,
-                checked: false
-            });
+            supports.push({ name: 'Nouveau support', balance: 100, pv: 0, color: '#38bdf8' });
             render();
         }
 
         function deleteRow(index) {
-            items.splice(index, 1);
+            supports.splice(index, 1);
             render();
         }
 
-        function clearChecked() {
-            items = items.filter(i => !i.checked);
-            render();
-        }
-
-        function resetToDefault() {
-            items = JSON.parse(JSON.stringify(defaultItems));
+        function resetData() {
+            supports = JSON.parse(JSON.stringify(defaultSupports));
             render();
         }
 
