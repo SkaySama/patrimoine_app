@@ -212,6 +212,13 @@
         .input-num { text-align: right; font-family: var(--ff-mono); }
         .input-color { padding: 2px; height: 32px; width: 32px; cursor: pointer; border: none; background: transparent; }
 
+        .input-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
         .btn {
             display: inline-flex;
             align-items: center;
@@ -306,7 +313,7 @@
                 <span class="metric-sub" style="color: var(--text-muted)">Total des versements</span>
             </div>
             <div class="metric-card">
-                <span class="metric-label">Plus-Value Totale</span>
+                <span class="metric-label">Plus-Value (Sélection)</span>
                 <span class="metric-value" id="gain-val">0 €</span>
                 <span class="metric-sub" id="gain-pct-badge">+0.00% sur le capital</span>
             </div>
@@ -321,7 +328,7 @@
                     <svg id="donut-chart" viewBox="-160 -160 320 320">
                         <g id="slices-group"></g>
                         <g class="center-group">
-                            <text class="center-title" y="-18">Patrimoine</text>
+                            <text class="center-title" y="-18">Patrimoine Visuel</text>
                             <text class="center-value" id="center-total" y="10">0 €</text>
                             <text class="center-sub" id="center-sub" y="32">0 supports</text>
                         </g>
@@ -337,6 +344,8 @@
                     <table>
                         <thead>
                             <tr>
+                                <th style="width: 30px; text-align: center;" title="Inclure dans la plus-value globale">PV</th>
+                                <th style="width: 30px; text-align: center;" title="Afficher dans le graphique camembert">Chart</th>
                                 <th style="width: 40px">Couleur</th>
                                 <th>Support</th>
                                 <th style="text-align: right">Solde Total (€)</th>
@@ -362,7 +371,7 @@
             <span id="tooltip-title">Support</span>
         </div>
         <div class="tooltip-body">
-            <div>Solde : <strong id="tooltip-val" style="color: var(--text)">0 €</strong> (<span id="tooltip-share">0%</span> du total)</div>
+            <div>Solde : <strong id="tooltip-val" style="color: var(--text)">0 €</strong> (<span id="tooltip-share">0%</span> du total visuel)</div>
             <div>Capital : <span id="tooltip-invested">0 €</span></div>
             <div>Plus-value : <span id="tooltip-gain" class="text-positive">0 €</span> (<strong id="tooltip-gain-pct" class="text-positive">+0%</strong>)</div>
         </div>
@@ -372,15 +381,14 @@
         const SUPABASE_URL = "https://xuuoeejdmzitjpsvhhmy.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1dW9lZWpkbXppdGpwc3ZoaG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5OTA2MTQsImV4cCI6MjEwNTU2NjYxNH0.JO0r78pD5cqOa0ZYwr_4W0CHM3tcKRzCWjgfcqCjqlg";
 
-        // Utilisation d'un nom de variable unique (sbClient) pour éviter les conflits
         const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const defaultItems = [
-            { id: 1, name: 'PEA', value: 6883, gain: 650, color: '#38bdf8' },
-            { id: 2, name: 'Livret A', value: 2600, gain: 0, color: '#4ade80' },
-            { id: 3, name: 'Compte courant', value: 500, gain: 0, color: '#facc15' },
-            { id: 4, name: 'Crypto', value: 367, gain: 57, color: '#f87171' },
-            { id: 5, name: 'CTO', value: 257, gain: 2.5, color: '#a855f7' }
+            { id: 1, name: 'PEA', value: 6883, gain: 650, color: '#38bdf8', includeGain: true, showInChart: true },
+            { id: 2, name: 'Livret A', value: 2600, gain: 0, color: '#4ade80', includeGain: false, showInChart: true },
+            { id: 3, name: 'Compte courant', value: 500, gain: 0, color: '#facc15', includeGain: false, showInChart: true },
+            { id: 4, name: 'Crypto', value: 367, gain: 57, color: '#f87171', includeGain: true, showInChart: true },
+            { id: 5, name: 'CTO', value: 257, gain: 2.5, color: '#a855f7', includeGain: true, showInChart: true }
         ];
 
         let items = [];
@@ -416,7 +424,11 @@
             const { data } = await sbClient.from('patrimoine').select('data').maybeSingle();
 
             if (data && data.data) {
-                items = data.data;
+                items = data.data.map(item => ({
+                    ...item,
+                    includeGain: item.includeGain !== undefined ? item.includeGain : true,
+                    showInChart: item.showInChart !== undefined ? item.showInChart : true
+                }));
             } else {
                 items = JSON.parse(JSON.stringify(defaultItems));
             }
@@ -455,9 +467,17 @@
             items.forEach((item, idx) => {
                 const invested = item.value - item.gain;
                 const gainPct = invested > 0 ? (item.gain / invested) * 100 : 0;
+                const isCheckedGain = item.includeGain !== false;
+                const isCheckedChart = item.showInChart !== false;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
+                    <td style="text-align: center;">
+                        <input type="checkbox" class="input-checkbox" ${isCheckedGain ? 'checked' : ''} onchange="updateItem(${idx}, 'includeGain', this.checked)">
+                    </td>
+                    <td style="text-align: center;">
+                        <input type="checkbox" class="input-checkbox" ${isCheckedChart ? 'checked' : ''} onchange="updateItem(${idx}, 'showInChart', this.checked)">
+                    </td>
                     <td>
                         <input type="color" class="input-color" value="${item.color}" onchange="updateItem(${idx}, 'color', this.value)">
                     </td>
@@ -485,36 +505,49 @@
 
         function renderMetricsAndChart() {
             const totalVal = items.reduce((sum, item) => sum + item.value, 0);
-            const totalGain = items.reduce((sum, item) => sum + item.gain, 0);
-            const totalInvested = totalVal - totalGain;
-            
-            const totalGainPct = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0;
+            const totalGainAll = items.reduce((sum, item) => sum + item.gain, 0);
+            const totalInvested = totalVal - totalGainAll;
+
+            // Filtrage : calcul de la plus-value
+            const filteredGain = items
+                .filter(item => item.includeGain !== false)
+                .reduce((sum, item) => sum + item.gain, 0);
+
+            const filteredInvested = items
+                .filter(item => item.includeGain !== false)
+                .reduce((sum, item) => sum + (item.value - item.gain), 0);
+
+            const totalGainPct = filteredInvested > 0 ? (filteredGain / filteredInvested) * 100 : 0;
 
             document.getElementById('total-val').textContent = fmt(totalVal);
             document.getElementById('invested-val').textContent = fmt(totalInvested);
-            document.getElementById('gain-val').textContent = fmt(totalGain);
+            document.getElementById('gain-val').textContent = fmt(filteredGain);
             
             const gainBadge = document.getElementById('gain-pct-badge');
-            gainBadge.textContent = `${fmtPct(totalGainPct)} sur le capital investi`;
+            gainBadge.textContent = `${fmtPct(totalGainPct)} sur le capital`;
             gainBadge.className = `metric-sub ${totalGainPct >= 0 ? 'text-positive' : 'text-negative'}`;
 
-            document.getElementById('center-total').textContent = fmt(totalVal);
-            document.getElementById('center-sub').textContent = `${items.length} support${items.length > 1 ? 's' : ''}`;
+            // Filtrage pour le graphique camembert
+            const chartItems = items.filter(item => item.showInChart !== false);
+            const chartTotalVal = chartItems.reduce((sum, item) => sum + item.value, 0);
+
+            document.getElementById('center-total').textContent = fmt(chartTotalVal);
+            document.getElementById('center-sub').textContent = `${chartItems.length} support${chartItems.length > 1 ? 's' : ''}`;
 
             const slicesGroup = document.getElementById('slices-group');
             slicesGroup.innerHTML = '';
 
-            if (totalVal <= 0) return;
+            if (chartTotalVal <= 0) return;
 
             const outerRadius = 130;
             const innerRadius = 90;
             const gap = 0.03;
             let currentAngle = -Math.PI / 2;
 
-            items.forEach((item) => {
+            chartItems.forEach((item) => {
                 if (item.value <= 0) return;
 
-                const share = item.value / totalVal;
+                const share = item.value / chartTotalVal;
                 const sliceAngle = share * (Math.PI * 2);
                 const startAngle = currentAngle + gap / 2;
                 const endAngle = currentAngle + sliceAngle - gap / 2;
@@ -526,7 +559,7 @@
                 path.setAttribute('fill', item.color);
                 path.setAttribute('class', 'donut-slice');
 
-                path.addEventListener('mousemove', (e) => showTooltip(e, item, share, totalVal));
+                path.addEventListener('mousemove', (e) => showTooltip(e, item, share, chartTotalVal));
                 path.addEventListener('mouseleave', hideTooltip);
 
                 slicesGroup.appendChild(path);
@@ -562,7 +595,9 @@
                 name: 'Nouveau Support',
                 value: 1000,
                 gain: 0,
-                color: randomColor
+                color: randomColor,
+                includeGain: true,
+                showInChart: true
             });
             render();
         }
